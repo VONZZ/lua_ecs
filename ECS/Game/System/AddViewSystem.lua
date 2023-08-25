@@ -12,6 +12,10 @@ function AddViewSystem:GetCollector(contexts)
     return collector
 end
 
+function AddViewSystem:Filter(entity)
+    return entity:HasComponent(GameComponentLookUp.AssetComponent)
+end
+
 function AddViewSystem:ChangeExecute(entities)
     for i = 1, #entities do
         local entity = entities[i]

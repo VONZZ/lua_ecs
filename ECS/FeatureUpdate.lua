@@ -12,6 +12,8 @@ function FeatureUpdate:ctor()
     self:Add(require("ECS.Game.System.AddViewSystem"), contexts)
     self:Add(require("ECS.Game.System.InitPlayerSystem"), contexts)
     self:Add(require("ECS.Game.System.InputSystem"), contexts)
+
+    -- contexts.game:Reset()
 end
 
 return FeatureUpdate

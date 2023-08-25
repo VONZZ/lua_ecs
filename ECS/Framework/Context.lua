@@ -49,15 +49,25 @@ function Context:ctor()
     self:_InitGroupData()
 end
 
-function Context:OnDispose()
-    
+function Context:Reset()
+    self:ClearGroup()
+    self:DestroyAllEntities()
+    self.mEntityUID = 0
 end
 
-function Context:Clear()
+function Context:ClearGroup()
     for _, set in pairs(self.mGroupList) do
         for _, group in pairs(set) do
             group:ClearEntity()
         end
+    end
+    self.mGroupList = {}
+    self:_InitGroupData()
+end
+
+function Context:DestroyAllEntities()
+    for _, entity in pairs(self.mEntityList) do
+        self:_OnDestroyEntity(entity)
     end
 end
 
@@ -234,7 +244,7 @@ function Context:GetGroup(matcher)
     return group
 end
 
----生成过滤组id，组件id简单求和做id有大概0.3%的碰撞概率，所以不是唯一id，但是可以大幅减少无用的遍历
+---生成过滤组id，组件id简单求和做id有碰撞概率，所以不是唯一id，但是可以大幅减少无用的遍历
 ---@param matcher Matcher 匹配器实例
 ---@return integer id
 function Context:_GenerateGroupID(matcher)

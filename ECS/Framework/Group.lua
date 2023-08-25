@@ -51,7 +51,6 @@ function Group:Reset()
 
     self.mAnyMode = false
 
-    self.mEntityIndexer = {}
     --- 实体对象缓存
     self.__entities = {}
 end
@@ -63,12 +62,6 @@ end
 ---获取实体列表
 function Group:GetEntities()
     return self.__entities
-end
-
-function Group:Test_GetEntities()
-    for key, value in pairs(self:GetEntities()) do
-        print(self.mID, key)
-    end
 end
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -135,12 +128,15 @@ end
 ---@param e Entity
 ---@return boolean
 function Group:_MatchEntity(e)
-    local pass_all = self.mAnyMode
+    for _, id in pairs(self.mNoneOfContent) do
+        if e:HasComponent(id) then
+            return false
+        end
+    end
     for _, id in pairs(self.mAllOfContent) do
         if self.mAnyMode then
             if e:HasComponent(id) then
-                pass_all = true
-                break
+                return true
             end
         else
             if not e:HasComponent(id) then
@@ -148,12 +144,7 @@ function Group:_MatchEntity(e)
             end
         end
     end
-    for _, id in pairs(self.mNoneOfContent) do
-        if e:HasComponent(id) then
-            return false
-        end
-    end
-    return pass_all
+    return true
 end
 
 return Group
