@@ -5,7 +5,7 @@
 -----------------------------------------------------------------------------------------------------------------------
 
 local _Base = require("ECS.Generated.GameEntity")
-
+---@class Entity
 local Entity = class("Entity", _Base)
 
 function Entity:ctor(context)

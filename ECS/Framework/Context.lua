@@ -3,11 +3,16 @@
 -- ECS Context ECS运行环境
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
+---@type Collector
 local Collector = require("ECS.Framework.Collector")
+---@type Entity
 local Entity = require("ECS.Framework.Entity")
+---@type Matcher
 local Matcher = require("ECS.Framework.Matcher")
+---@type Group
 local Group = require("ECS.Framework.Group")
 
+---@class Context
 local Context = class("Context")
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -31,16 +36,6 @@ function Context:ctor()
             [10] = {...}
         }
     ]]
-    -- self.mGroupMap_Act = {} -- 由Added、Removed动作和数字id索引，有重复
-    --[[
-        mGroupMap_Act = {
-            OnAdd = {
-                [5612] = { ... }
-            },
-            OnRemoved = {},
-            OnUpdate = {}
-        }
-    ]]
     --- 实体UID，自增
     self.mEntityUID = 0
     --- 匹配器实例，只需要一个
@@ -58,7 +53,7 @@ end
 function Context:ClearGroup()
     for _, set in pairs(self.mGroupList) do
         for _, group in pairs(set) do
-            group:ClearEntity()
+            group:OnDispose()
         end
     end
     self.mGroupList = {}
@@ -269,7 +264,6 @@ function Context:GetCollector(groups, groupEvents)
     local collector = Collector.new(groups, groupEvents)
     return collector
 end
-
 
 -----------------------------------------------------------------------------------------------------------------------
 -- DebugLog debug相关

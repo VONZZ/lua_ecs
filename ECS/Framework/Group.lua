@@ -5,7 +5,9 @@
 -----------------------------------------------------------------------------------------------------------------------
 ---@type EventList
 local EventList = require("ECS.Framework.EventList")
+---@type GroupChangeEvent
 local GroupChangeEvent = GroupChangeEvent
+---@class Group
 local Group = class("Group")
 
 function Group:ctor(id, matcher)
@@ -39,6 +41,7 @@ function Group:registerGroupChangeEvent(callback)
 end
 
 function Group:OnDispose()
+    self.__entities = {}
     self.mGroupChangeEventList:unregisterAll()
 end
 
@@ -52,10 +55,6 @@ function Group:Reset()
     self.mAnyMode = false
 
     --- 实体对象缓存
-    self.__entities = {}
-end
-
-function Group:ClearEntity()
     self.__entities = {}
 end
 

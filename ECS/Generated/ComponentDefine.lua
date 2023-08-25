@@ -3,18 +3,18 @@
 -------------------------------------------------------------------------------------------------
 
 GameComponentScript = {
-    [1] = require('ECS.Generated.Components.GameViewComponent'),
-    [2] = require('ECS.Generated.Components.GameAssetComponent'),
+    [1] = require('ECS.Generated.Components.GameAssetComponent'),
+    [2] = require('ECS.Generated.Components.GameViewComponent'),
 
 }
 
 GameComponentLookUp = {
-    ViewComponent = 1,
-    AssetComponent = 2,
+    AssetComponent = 1,
+    ViewComponent = 2,
 }
 
 --- 组件匹配id，和GameComponentLookUp保持一致，主要是为了书写简洁
 EMatcher = {
-    View = 1,
-    Asset = 2,
+    Asset = 1,
+    View = 2,
 }

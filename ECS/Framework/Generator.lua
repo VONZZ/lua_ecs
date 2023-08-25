@@ -139,12 +139,7 @@ return [Name]
     assert(file, "create file is nil")
     file:write(code_comp)
     file:close()
-
-
-    print('----------------------')
 end
-
-
 
 ---------------------------------------------------------------------------------------
 -- 生成GameEntity代码
@@ -237,13 +232,11 @@ code_head = code_head .. [[
 return GameEntity
 ]]
 
--- print(code_head)
 
 local entity_file = io.open(entity_path, "w+")
 assert(entity_file, "entity_file file is nil")
 entity_file:write(code_head)
 entity_file:close()
-
 
 ---------------------------------------------------------------------------------------
 -- 生成ComponentDefine代码
@@ -288,8 +281,6 @@ code_context = code_context:gsub('%[REQ]', req)
 code_context = code_context:gsub('%[LOK]', lok)
 code_context = code_context:gsub('%[MAC]', mac)
 
--- print(code_context)
-
 local context_file = io.open(path_context, "w+")
 assert(context_file, "context_file file is nil")
 context_file:write(code_context)
@@ -306,6 +297,7 @@ local code_context = [[
 -- 自动生成，请勿改动
 -------------------------------------------------------------------------------------------------
 local Context = require("ECS.Framework.Context")
+---@class Contexts
 local Contexts = class("Contexts")
 
 local _instance = nil
@@ -341,12 +333,9 @@ nc = nc:gsub("\n[^\n]*$", "")
 code_context = code_context:gsub('%[CT]', ct)
 code_context = code_context:gsub('%[NC]', nc)
 
--- print(code_context)
-
 local context_file = io.open(path_context, "w+")
 assert(context_file, "context_file file is nil")
 context_file:write(code_context)
 context_file:close()
-
 
 print("----------- 代码生成完毕 ------------------------------------------------------")

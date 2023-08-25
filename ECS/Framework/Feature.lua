@@ -14,15 +14,14 @@ function Feature:Add(sys, contexts)
 end
 
 function Feature:Execute(dt)
-    for _, system in ipairs(self.__systems) do
-        system:Execute(dt)
+    for i = 1, #self.__systems do
+        self.__systems[i]:Execute(dt)
     end
 end
 
 function Feature:OnDispose()
-    for key, system in ipairs(self.__systems) do
-        system:OnDispose()
-        self.__systems[key] = nil
+    for i = #self.__systems , 1, -1 do
+        self.__systems[i]:OnDispose()
     end
     self.__systems = {}
 end

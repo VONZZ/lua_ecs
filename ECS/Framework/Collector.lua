@@ -1,6 +1,7 @@
 ------------------------------------------------------------------------
 ---收集器
 ------------------------------------------------------------------------
+---@class Collector
 local Collector = class("Collector")
 
 function Collector:ctor(groups, groupEvents)
