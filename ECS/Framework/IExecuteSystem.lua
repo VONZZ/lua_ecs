@@ -1,28 +1,17 @@
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
--- 系统基类
+-- 系统基类（需要每帧执行的系统）
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
+local IExecuteSystem = class("IExecuteSystem")
 
-local System = class("System")
-
-function System:ctor(contexts)
-    
-end
-
----初始化函数
-function System:Initialize()
-
+function IExecuteSystem:ctor(contexts)
+    self.__systemType = ISystemType.IExecute
 end
 
 ---每帧执行函数
-function System:Execute(dt)
+function IExecuteSystem:Execute(dt)
 
 end
 
----释放函数
-function System:OnDispose()
-
-end
-
-return System
+return IExecuteSystem

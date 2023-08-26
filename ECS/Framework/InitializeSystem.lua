@@ -1,19 +1,17 @@
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
--- 过滤组变化事件类型
+-- 系统基类（初始化系统）
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
----@class GroupChangeEvent
-GroupChangeEvent = {
-    None = 0,
-    Added = 1,
-    Updated = 2,
-    Removed = 4
-}
+local InitializeSystem = class("InitializeSystem")
 
----@class ISystemType
-ISystemType = {
-    IInitialize = 1,
-    IExecute = 2,
-    IReactive = 4
-}
+function InitializeSystem:ctor(contexts)
+    self.__systemType = ISystemType.IInitialize
+end
+
+---初始化函数
+function InitializeSystem:Initialize()
+
+end
+
+return InitializeSystem

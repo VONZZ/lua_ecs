@@ -1,36 +1,35 @@
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
--- 响应性系统
+-- 响应系统（监听entity组件变化的system）
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
-local _Base = require("ECS.Framework.System")
+local _Base = require("ECS.Framework.IReactiveSystem")
 ---@class ReactiveSystem
 local ReactiveSystem = class("ReactiveSystem", _Base)
 
 function ReactiveSystem:ctor(contexts)
+    _Base.ctor(self, contexts)
     ---@type Collector
     self.mCollector = self:GetCollector(contexts)
     self.mBuffer = {}
 end
 
+-----------------------------------------需要子类重写---------------------------
 ---获取收集器,子类需要重写
 ---@param contexts Contexts
-function ReactiveSystem:GetCollector(contexts)
-    
-end
+function ReactiveSystem:GetCollector(contexts) end
 
 ---过滤后的entitas变化回调,子类需要重写
 ---@param entities Entity[]
-function ReactiveSystem:ChangeExecute(entities)
-    
-end
+function ReactiveSystem:ChangeExecute(entities) end
 
 ---entity过滤条件
 ---@param entity Entity
 ---@return boolean
-function ReactiveSystem:Filter(entity)
-    return true
+function ReactiveSystem:Filter(entity) return 
+    true
 end
+-----------------------------------------需要子类重写------------------------------
 
 ---每帧处理收集的entity
 function ReactiveSystem:Execute()

@@ -1,7 +1,8 @@
-local _Base = require("ECS.Framework.System")
+local _Base = require("ECS.Framework.InitializeSystem")
 local InitPlayerSystem = class("InitPlayerSystem", _Base)
 
 function InitPlayerSystem:ctor(contexts)
+    _Base.ctor(self, contexts)
     self.context = contexts.game
 end
 
