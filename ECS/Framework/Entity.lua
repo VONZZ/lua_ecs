@@ -3,13 +3,11 @@
 -- 实体基类
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
-
-local _Base = require("ECS.Generated.GameEntity")
 ---@class Entity
-local Entity = class("Entity", _Base)
+local Entity = class("Entity")
 
 function Entity:ctor(context)
-    _Base.ctor(self, context)
+    self.context = context
     self.__component_indexer = {}
     self.mUID = 0
 end
@@ -51,7 +49,5 @@ end
 function Entity:GetComponent(id)
     return self.__component_indexer[id]
 end
-
-
 
 return Entity

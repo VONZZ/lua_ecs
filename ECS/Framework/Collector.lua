@@ -66,6 +66,7 @@ end
 
 ---激活收集器
 function Collector:Activate()
+    self:_unregisterGroupChange()
     self:_registerGroupChange()
 end
 

@@ -1,3 +1,4 @@
 return {
-    gameObject = ""
+    gameObject = "",
+    id = 0,
 }

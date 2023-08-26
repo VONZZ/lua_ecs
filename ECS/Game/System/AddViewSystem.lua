@@ -5,7 +5,7 @@ local AddViewSystem = class("AddViewSystem", _Base)
 function AddViewSystem:GetCollector(contexts)
     local context = contexts.game
     local collector = context:GetCollector({
-        context:GetGroup(context:GetMatcher():AllOf(EMatcher.Asset))
+        context:GetGroup(context:GetMatcher():AllOf(GameEMatcher.Asset))
     },{
         GroupChangeEvent.Added
     })

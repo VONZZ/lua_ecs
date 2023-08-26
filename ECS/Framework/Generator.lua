@@ -2,13 +2,19 @@
 -- ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
 
 local process = {
-    AssetComponent = "ECS\\Game\\Component\\AssetComponent.lua",
-    ViewComponent = "ECS\\Game\\Component\\ViewComponent.lua",
+    Game = {
+        AssetComponent = "ECS\\Game\\Component\\AssetComponent.lua",
+        ViewComponent = "ECS\\Game\\Component\\ViewComponent.lua",
+    },
+    Input = {
+        InputComponent = "ECS\\Input\\Component\\InputComponent.lua",
+    }
+
 }
 
 local contextType = {
-    game = "game",
-    input = "input"
+    "Game",
+    "Input"
 }
 
 
@@ -16,21 +22,24 @@ local contextType = {
 --============================================================================================
 
 require("Core.functions")
-local generate_path = 'ECS\\Generated\\Components\\Game'
-
 local entity_extention = {}
 --[[
     entity_extention = {
-        [TestComponent] = 'id, list, bol'
+        [contextName] = {
+            [TestComponent] = 'id, list, bol'
+        }
+        ...
     }
 ]]
 ---------------------------------------------------------------------------------------
--- 生成GameComponent代码
+-- 生成Component代码
 ---------------------------------------------------------------------------------------
-print("----------- 生成GameComponent代码 -----------------------------------------------")
+print("----------- 生成Component代码 -----------------------------------------------")
 
-for name, path in pairs(process) do
-    local code_comp = [[
+for contextName, compList in pairs(process) do
+    local generate_path = string.format('ECS\\Generated\\%s\\Components\\', contextName)
+    for name, path in pairs(compList) do
+        local code_comp = [[
 local _Base = require('ECS.Framework.Component')
 local [Name] = class('[Name]', _Base)
 
@@ -43,200 +52,209 @@ function [Name]:SetData([Param])
 end
 
 return [Name]
-]]
-
-    local comp = path:gsub('\\', '.')
-    comp = comp:gsub('.lua', '')
-    local script = require(comp)
-
-    local file = io.open(path, "r")
-    assert(file, "read file is nil")
-
-    entity_extention[name] = {}
-
-    ---------------- 处理属性字段 ----------------
-    local content = ''
-    local set_content = ''
-    local index = 0
-    local line = ''
-    local param = ''
-
-    for r in file:lines() do
-        if table_is_empty(script) then
-            break
+        ]]
+            
+        local comp = path:gsub('\\', '.')
+        comp = comp:gsub('.lua', '')
+        local script = require(comp)
+    
+        local file = io.open(path, "r")
+        assert(file, "read file is nil")
+        if not entity_extention[contextName] then
+            entity_extention[contextName] = {}
         end
-        index = index + 1
-        if index >= 2 then
-            if r == '}' then
+        entity_extention[contextName][name] = {}
+    
+        ---------------- 处理属性字段 ----------------
+        local content = ''
+        local set_content = ''
+        local index = 0
+        local line = ''
+        local param = ''
+    
+        for r in file:lines() do
+            if table_is_empty(script) then
                 break
             end
-            line = r
-            line = line:gsub(' ', '')
-            line = line:gsub('\n', '')
-            if line == '' then -- 处理空行
-                goto continue
-            end
-            if line:sub(#line) == ',' then
-                line = line:sub(1, #line - 1)
-            end
-            -- 分割行，1 = 属性名，2 = 属性默认值
-            local sp_pos = line:find('=')
-            local prop_name = line
-            local prop_value = ''
-            if sp_pos then
-                prop_name = line:sub(1, sp_pos - 1)
-                prop_value = line:sub(sp_pos + 1)
-            end
-
-
-            if nil == sp_pos then
-                content = string.format("%s     self.%s = %s\n", content, prop_name, prop_name)
-            else
+            index = index + 1
+            if index >= 2 then
+                if r == '}' then
+                    break
+                end
+                line = r
+                line = line:gsub(' ', '')
+                line = line:gsub('\n', '')
+                if line == '' then -- 处理空行
+                    goto continue
+                end
+                if line:sub(#line) == ',' then
+                    line = line:sub(1, #line - 1)
+                end
+                -- 分割行，1 = 属性名，2 = 属性默认值
+                local sp_pos = line:find('=')
+                local prop_name = line
+                local prop_value = ''
+                if sp_pos then
+                    prop_name = line:sub(1, sp_pos - 1)
+                    prop_value = line:sub(sp_pos + 1)
+                end
+    
+    
+                if nil == sp_pos then
+                    content = string.format("%s     self.%s = %s\n", content, prop_name, prop_name)
+                else
+                    -- 需要处理布尔值，不能直接用or，否则不能正确赋值
+                    if type(script[prop_name]) == 'boolean' then
+                        content = string.format("%s     self.%s = %s == nil and false or %s\n", content, prop_name,
+                            prop_name,
+                            prop_value)
+                    else
+                        content = string.format("%s     self.%s = %s or %s\n", content, prop_name, prop_name, prop_value)
+                    end
+                end
+    
+    
                 -- 需要处理布尔值，不能直接用or，否则不能正确赋值
                 if type(script[prop_name]) == 'boolean' then
-                    content = string.format("%s     self.%s = %s == nil and false or %s\n", content, prop_name,
+                    set_content = string.format("%s     self.%s = %s == nil and self.%s or %s\n", set_content, prop_name,
                         prop_name,
-                        prop_value)
+                        prop_name, prop_name)
                 else
-                    content = string.format("%s     self.%s = %s or %s\n", content, prop_name, prop_name, prop_value)
+                    set_content = string.format("%s     self.%s = %s or self.%s\n", set_content, prop_name, prop_name,
+                        prop_name)
                 end
+    
+                ---------------- 处理参数 ----------------
+                param = string.format('%s, %s', param, prop_name)
             end
-
-
-            -- 需要处理布尔值，不能直接用or，否则不能正确赋值
-            if type(script[prop_name]) == 'boolean' then
-                set_content = string.format("%s     self.%s = %s == nil and self.%s or %s\n", set_content, prop_name,
-                    prop_name,
-                    prop_name, prop_name)
-            else
-                set_content = string.format("%s     self.%s = %s or self.%s\n", set_content, prop_name, prop_name,
-                    prop_name)
-            end
-
-            ---------------- 处理参数 ----------------
-            param = string.format('%s, %s', param, prop_name)
+            ::continue::
         end
-        ::continue::
+        param = string.sub(param, 3, #param)
+    
+        file:close()
+    
+        content = content:gsub("\n[^\n]*$", "")
+        set_content = set_content:gsub("\n[^\n]*$", "")
+    
+        code_comp = code_comp:gsub('%[Name]', name)
+        code_comp = code_comp:gsub('%[Param]', param)
+        code_comp = code_comp:gsub('%[Prop]', content)
+        code_comp = code_comp:gsub('%[SetData]', set_content)
+    
+    
+        -- 缓存到Entity扩展列表
+        entity_extention[contextName][name] = param
+        os.execute("mkdir ".. generate_path)
+        file = io.open(generate_path.. contextName .. name .. '.lua', 'w+')
+    
+        assert(file, "create file is nil")
+        file:write(code_comp)
+        file:close()
     end
-    param = string.sub(param, 3, #param)
-
-    file:close()
-
-    content = content:gsub("\n[^\n]*$", "")
-    set_content = set_content:gsub("\n[^\n]*$", "")
-
-    code_comp = code_comp:gsub('%[Name]', name)
-    code_comp = code_comp:gsub('%[Param]', param)
-    code_comp = code_comp:gsub('%[Prop]', content)
-    code_comp = code_comp:gsub('%[SetData]', set_content)
-
-
-    -- 缓存到GameEntity扩展列表
-    entity_extention[name] = param
-
-    file = io.open(generate_path .. name .. '.lua', 'w+')
-
-    assert(file, "create file is nil")
-    file:write(code_comp)
-    file:close()
 end
 
 ---------------------------------------------------------------------------------------
--- 生成GameEntity代码
+-- 生成Entity代码
 ---------------------------------------------------------------------------------------
-print("----------- 生成GameEntity代码 -----------------------------------------------")
-
-local entity_path = "ECS\\Generated\\GameEntity.lua"
-
-local code_head = [[
-local GameEntity = class("GameEntity")
-
-function GameEntity:ctor(context)
-    self.context = context
-    self.onAddedComponent = nil
-    self.onUpdatedComponent = nil
-    self.onRemovedComponent = nil
-end
-
-function GameEntity:OnDispose()
-[ClearCode]
-    self.onAddedComponent = nil
-    self.onUpdatedComponent = nil
-    self.onRemovedComponent = nil
-end
-
-]]
+print("----------- 生成Entity代码 -----------------------------------------------")
 
 
-local code_body = [[
+for _, contextName in pairs(contextType) do
+    local entity_path = "ECS\\Generated\\[T]\\[T]Entity.lua"
 
---========= [Name] ========================================================================
-function GameEntity:Add[PName]([Param])
-    if self:HasComponent(GameComponentLookUp.[Name]) then
-        self:Update[PName]([Param])
-        return
+    local code_head = [[
+    local _Base = require("ECS.Framework.Entity")
+    local [T]Entity = class("[T]Entity", _Base)
+    
+    function [T]Entity:ctor(context)
+        _Base.ctor(self, context)
+        self.onAddedComponent = nil
+        self.onUpdatedComponent = nil
+        self.onRemovedComponent = nil
     end
-    self.[PName] = self.context:_GetComponent(GameComponentLookUp.[Name])
-    self.[PName]:Init([Param])
-    self:_OnAddComponent(self.[PName])
-    if self.onAddedComponent then
-        self.onAddedComponent(self.context, self, self.[PName])
+    
+    function [T]Entity:OnDispose()
+    [ClearCode]
+        self.onAddedComponent = nil
+        self.onUpdatedComponent = nil
+        self.onRemovedComponent = nil
     end
-end
-
-function GameEntity:Update[PName]([Param])
-    if not self:HasComponent(GameComponentLookUp.[Name]) then
-        self:Add[PName]([Param])
-        return
+    
+    ]]
+    
+    
+    local code_body = [[
+    
+    --========= [Name] ========================================================================
+    function [T]Entity:Add[PName]([Param])
+        if self:HasComponent([T]ComponentLookUp.[Name]) then
+            self:Update[PName]([Param])
+            return
+        end
+        self.[PName] = self.context:_GetComponent([T]ComponentLookUp.[Name])
+        self.[PName]:Init([Param])
+        self:_OnAddComponent(self.[PName])
+        if self.onAddedComponent then
+            self.onAddedComponent(self.context, self, self.[PName])
+        end
     end
-    self.[PName]:SetData([Param])
-    if self.onUpdatedComponent then
-        self.onUpdatedComponent(self.context, self, self.[PName])
+    
+    function [T]Entity:Update[PName]([Param])
+        if not self:HasComponent([T]ComponentLookUp.[Name]) then
+            self:Add[PName]([Param])
+            return
+        end
+        self.[PName]:SetData([Param])
+        if self.onUpdatedComponent then
+            self.onUpdatedComponent(self.context, self, self.[PName])
+        end
     end
-end
-
-function GameEntity:Remove[PName]()
-    if not self:HasComponent(GameComponentLookUp.[Name]) then 
-        return 
+    
+    function [T]Entity:Remove[PName]()
+        if not self:HasComponent([T]ComponentLookUp.[Name]) then 
+            return 
+        end
+        self:_OnRemoveComponent(self.[PName])
+        self.[PName] = nil
+        if self.onRemovedComponent then
+            self.onRemovedComponent(self.context, self, self.[PName])
+        end
     end
-    self:_OnRemoveComponent(self.[PName])
-    self.[PName] = nil
-    if self.onRemovedComponent then
-        self.onRemovedComponent(self.context, self, self.[PName])
+    
+    function [T]Entity:Has[PName]()
+        return self:HasComponent([T]ComponentLookUp.[Name])
     end
+    ]]
+    
+    local clear_builder = ''
+    
+    for key, value in pairs(entity_extention[contextName]) do
+        local propery_name = key:gsub("Component", '')
+        local code = code_body
+        code = code:gsub('%[Param]', value)
+        code = code:gsub('%[PName]', propery_name)
+        code = code:gsub('%[Name]', key)
+        code_head = code_head .. code
+    
+        clear_builder = clear_builder .. string.format("    self.%s = nil\n", propery_name)
+    end
+    clear_builder = clear_builder:gsub("\n[^\n]*$", "")
+    
+    code_head = code_head:gsub('%[ClearCode]', clear_builder)
+    code_head = code_head .. [[
+    
+    return [T]Entity
+    ]]
+    
+    code_head = code_head:gsub('%[T]', contextName)
+    code_body = code_body:gsub('%[T]', contextName)
+    entity_path = entity_path:gsub('%[T]', contextName)
+
+    local entity_file = io.open(entity_path, "w+")
+    assert(entity_file, "entity_file file is nil")
+    entity_file:write(code_head)
+    entity_file:close()
 end
-
-function GameEntity:Has[PName]()
-    return self:HasComponent(GameComponentLookUp.[Name])
-end
-]]
-
-local clear_builder = ''
-
-for key, value in pairs(entity_extention) do
-    local propery_name = key:gsub("Component", '')
-    local code = code_body
-    code = code:gsub('%[Param]', value)
-    code = code:gsub('%[PName]', propery_name)
-    code = code:gsub('%[Name]', key)
-    code_head = code_head .. code
-
-    clear_builder = clear_builder .. string.format("    self.%s = nil\n", propery_name)
-end
-
-clear_builder = clear_builder:gsub("\n[^\n]*$", "")
-
-code_head = code_head:gsub('%[ClearCode]', clear_builder)
-code_head = code_head .. [[
-
-return GameEntity
-]]
-
-
-local entity_file = io.open(entity_path, "w+")
-assert(entity_file, "entity_file file is nil")
-entity_file:write(code_head)
-entity_file:close()
 
 ---------------------------------------------------------------------------------------
 -- 生成ComponentDefine代码
@@ -249,37 +267,53 @@ local code_context = [[
 -- 自动生成，请勿改动
 -------------------------------------------------------------------------------------------------
 
-GameComponentScript = {
+]]
+
+local str = ""
+for contextName, extention in pairs(entity_extention) do
+    local reqM = [[
+[T]ComponentScript = {
 [REQ]
 }
 
-GameComponentLookUp = {
+]]
+    local lokM = [[
+[T]ComponentLookUp = {
 [LOK]
 }
 
---- 组件匹配id，和GameComponentLookUp保持一致，主要是为了书写简洁
-EMatcher = {
+]]
+    local macM = [[
+[T]EMatcher = {
 [MAC]
 }
-]]
 
-local req = ''
-local lok = ''
-local mac = ''
-local index = 1
-for key, value in pairs(entity_extention) do
-    req = req .. string.format("    [%d] = require('ECS.Generated.Components.Game%s'),\n", index, key)
-    lok = lok .. string.format("    %s = %d,\n", key, index)
-    mac = mac .. string.format("    %s = %d,\n", key:gsub('Component', ''), index)
-    index = index + 1
+]]
+    local req = ''
+    local lok = ''
+    local mac = ''
+    local index = 1
+    for key, value in pairs(extention) do
+        req = req .. string.format("    [%d] = require('ECS.Generated.%s.Components.%s%s'),\n", index,contextName, contextName, key)
+        lok = lok .. string.format("    %s = %d,\n", key, index)
+        mac = mac .. string.format("    %s = %d,\n", key:gsub('Component', ''), index)
+        index = index + 1
+    end
+    req = req:gsub("\n[^\n]*$", "")
+    lok = lok:gsub("\n[^\n]*$", "")
+    mac = mac:gsub("\n[^\n]*$", "")
+
+    reqM = reqM:gsub('%[REQ]', req)
+    lokM = lokM:gsub('%[LOK]', lok)
+    macM = macM:gsub('%[MAC]', mac)
+
+    reqM = reqM:gsub('%[T]', contextName)
+    lokM = lokM:gsub('%[T]', contextName)
+    macM = macM:gsub('%[T]', contextName)
+    str = str..reqM..lokM..macM
 end
 
-lok = lok:gsub("\n[^\n]*$", "")
-mac = mac:gsub("\n[^\n]*$", "")
-
-code_context = code_context:gsub('%[REQ]', req)
-code_context = code_context:gsub('%[LOK]', lok)
-code_context = code_context:gsub('%[MAC]', mac)
+code_context = code_context..str
 
 local context_file = io.open(path_context, "w+")
 assert(context_file, "context_file file is nil")
@@ -296,7 +330,7 @@ local code_context = [[
 -------------------------------------------------------------------------------------------------
 -- 自动生成，请勿改动
 -------------------------------------------------------------------------------------------------
-local Context = require("ECS.Framework.Context")
+[RCT]
 ---@class Contexts
 local Contexts = class("Contexts")
 
@@ -317,25 +351,60 @@ function Contexts:SetAllContexts()
 [NC]
 end
 
-
 return Contexts
 ]]
 
 local ct = ''
 local nc = ''
-for key, value in pairs(contextType) do
-    ct = ct .. string.format("    self.%s = nil\n", key)
-    nc = nc .. string.format("    self.%s = Context.new()\n", key)
+local rct = ''
+for _, contextName in pairs(contextType) do
+    ct = ct .. string.format("    self.%s = nil\n", string.lower(contextName))
+    nc = nc .. string.format("    self.%s = %sContext.new()\n", string.lower(contextName), contextName)
+    rct = rct .. string.format("local %sContext = require(\"ECS.Generated.%s.%sContext\")\n", contextName, contextName, contextName)
 end
 ct = ct:gsub("\n[^\n]*$", "")
 nc = nc:gsub("\n[^\n]*$", "")
 
 code_context = code_context:gsub('%[CT]', ct)
 code_context = code_context:gsub('%[NC]', nc)
+code_context = code_context:gsub('%[RCT]', rct)
 
 local context_file = io.open(path_context, "w+")
 assert(context_file, "context_file file is nil")
 context_file:write(code_context)
 context_file:close()
+
+---------------------------------------------------------------------------------------
+-- 生成Context<T>代码
+---------------------------------------------------------------------------------------
+print("----------- 生成TContext<T>代码 -----------------------------------------------")
+
+
+for _, contextName in pairs(contextType) do
+    local path_context = "ECS\\Generated\\[T]\\[T]Context.lua"
+    local code_context = [[
+    -------------------------------------------------------------------------------------------------
+    -- 自动生成，请勿改动
+    -------------------------------------------------------------------------------------------------
+    local _Base = require("ECS.Framework.Context")
+    local Entity = require("ECS.Generated.[T].[T]Entity")
+    ---@class [T]Context
+    local [T]Context = class("[T]Context", _Base)
+    
+    function [T]Context:_GetEntityClass()
+        return Entity
+    end
+    
+    return [T]Context
+    ]]
+    
+    code_context = code_context:gsub('%[T]', contextName)
+    path_context = path_context:gsub('%[T]', contextName)
+    
+    local context_file = io.open(path_context, "w+")
+    assert(context_file, "context_file file is nil")
+    context_file:write(code_context)
+    context_file:close()
+end
 
 print("----------- 代码生成完毕 ------------------------------------------------------")

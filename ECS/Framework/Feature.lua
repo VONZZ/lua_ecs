@@ -36,6 +36,18 @@ function Feature:Execute(dt)
     end
 end
 
+function Feature:ActiveReactiveSystems()
+    for i = #self.__reactiveSystems , 1, -1 do
+        self.__reactiveSystems[i]:Activate()
+    end
+end
+
+function Feature:DeactiveReactiveSystems()
+    for i = #self.__reactiveSystems , 1, -1 do
+        self.__reactiveSystems[i]:Deactivate()
+    end
+end
+
 function Feature:OnDispose()
     for i = #self.__reactiveSystems , 1, -1 do
         self.__reactiveSystems[i]:OnDispose()

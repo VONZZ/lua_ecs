@@ -10,3 +10,4 @@ function AssetComponent:SetData(path)
 end
 
 return AssetComponent
+        

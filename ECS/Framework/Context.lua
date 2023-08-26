@@ -84,6 +84,14 @@ function Context:_InitGroupData()
 end
 
 -----------------------------------------------------------------------------------------------------------------------
+-- Component 多态相关
+-----------------------------------------------------------------------------------------------------------------------
+---获取当前Context的EntityClass
+function Context:_GetEntityClass()
+    
+end
+
+-----------------------------------------------------------------------------------------------------------------------
 -- Entity 实体相关
 -----------------------------------------------------------------------------------------------------------------------
 
@@ -94,7 +102,7 @@ function Context:CreateEntity()
     if #self.mEntityList_Recycle > 0 then
         entity = table.remove(self.mEntityList_Recycle, #self.mEntityList_Recycle)
     else
-        entity = Entity.new(self)
+        entity = self:_GetEntityClass().new(self)
     end
     entity.mUID = self:_GetEntityUID()
     entity.onAddedComponent = self._OnAddComponent

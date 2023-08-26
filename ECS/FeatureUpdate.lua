@@ -26,7 +26,7 @@ end
 
 function FeatureUpdate:createSystems(contexts)
     self:Add(require("ECS.Game.System.InitPlayerSystem"), contexts)
-    self:Add(require("ECS.Game.System.InputSystem"), contexts)
+    self:Add(require("ECS.Input.System.InputSystem"), contexts)
     self:Add(require("ECS.Game.System.AddViewSystem"), contexts)
 end
 
