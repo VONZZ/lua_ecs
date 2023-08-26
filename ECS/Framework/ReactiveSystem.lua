@@ -7,12 +7,10 @@ local _Base = require("ECS.Framework.System")
 ---@class ReactiveSystem
 local ReactiveSystem = class("ReactiveSystem", _Base)
 
----@param contexts Contexts
-function ReactiveSystem:Initialize(contexts)
+function ReactiveSystem:ctor(contexts)
     ---@type Collector
     self.mCollector = self:GetCollector(contexts)
     self.mBuffer = {}
-    self:Activate()
 end
 
 ---获取收集器,子类需要重写

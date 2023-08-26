@@ -7,11 +7,11 @@
 local System = class("System")
 
 function System:ctor(contexts)
-    self:Initialize(contexts)
+    
 end
 
 ---初始化函数
-function System:Initialize(contexts)
+function System:Initialize()
 
 end
 

@@ -18,6 +18,7 @@ function Collector:ctor(groups, groupEvents)
     self.onGroupChange = function (group, e, changeEvent)
         this:_entityChange(group, e, changeEvent)
     end
+    self:Activate()
 end
 
 ---初始化过滤组和变化类型映射关系

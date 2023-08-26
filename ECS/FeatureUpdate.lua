@@ -9,11 +9,17 @@ function FeatureUpdate:ctor()
     local contexts = Contexts.Instance()
     contexts:SetAllContexts()
     
-    self:Add(require("ECS.Game.System.AddViewSystem"), contexts)
-    self:Add(require("ECS.Game.System.InitPlayerSystem"), contexts)
-    self:Add(require("ECS.Game.System.InputSystem"), contexts)
+    self:createSystems(contexts)
+
+    self:Initialize()
 
     -- contexts.game:Reset()
+end
+
+function FeatureUpdate:createSystems(contexts)
+    self:Add(require("ECS.Game.System.InitPlayerSystem"), contexts)
+    self:Add(require("ECS.Game.System.InputSystem"), contexts)
+    self:Add(require("ECS.Game.System.AddViewSystem"), contexts)
 end
 
 return FeatureUpdate
