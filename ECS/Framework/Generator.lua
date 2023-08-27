@@ -34,12 +34,6 @@ local entity_extention = {}
     }
 ]]
 
-local function file_exists(path)
-    local file = io.open(path, "rb")
-    if file then file:close() end
-    return file ~= nil
-end
-
 ---------------------------------------------------------------------------------------
 -- 生成Component代码
 ---------------------------------------------------------------------------------------
