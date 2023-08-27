@@ -9,53 +9,13 @@
     end
     
     function GameEntity:OnDispose()
-        self.View = nil
-    self.Asset = nil
+        self.Asset = nil
+    self.View = nil
         self.onAddedComponent = nil
         self.onUpdatedComponent = nil
         self.onRemovedComponent = nil
     end
     
-        
-    --========= ViewComponent ========================================================================
-    function GameEntity:AddView(gameObject, id)
-        if self:HasComponent(GameComponentLookUp.ViewComponent) then
-            self:UpdateView(gameObject, id)
-            return
-        end
-        self.View = self.context:_GetComponent(GameComponentLookUp.ViewComponent)
-        self.View:Init(gameObject, id)
-        self:_OnAddComponent(self.View)
-        if self.onAddedComponent then
-            self.onAddedComponent(self.context, self, self.View)
-        end
-    end
-    
-    function GameEntity:UpdateView(gameObject, id)
-        if not self:HasComponent(GameComponentLookUp.ViewComponent) then
-            self:AddView(gameObject, id)
-            return
-        end
-        self.View:SetData(gameObject, id)
-        if self.onUpdatedComponent then
-            self.onUpdatedComponent(self.context, self, self.View)
-        end
-    end
-    
-    function GameEntity:RemoveView()
-        if not self:HasComponent(GameComponentLookUp.ViewComponent) then 
-            return 
-        end
-        self:_OnRemoveComponent(self.View)
-        self.View = nil
-        if self.onRemovedComponent then
-            self.onRemovedComponent(self.context, self, self.View)
-        end
-    end
-    
-    function GameEntity:HasView()
-        return self:HasComponent(GameComponentLookUp.ViewComponent)
-    end
         
     --========= AssetComponent ========================================================================
     function GameEntity:AddAsset(path)
@@ -95,6 +55,46 @@
     
     function GameEntity:HasAsset()
         return self:HasComponent(GameComponentLookUp.AssetComponent)
+    end
+        
+    --========= ViewComponent ========================================================================
+    function GameEntity:AddView(gameObject, id)
+        if self:HasComponent(GameComponentLookUp.ViewComponent) then
+            self:UpdateView(gameObject, id)
+            return
+        end
+        self.View = self.context:_GetComponent(GameComponentLookUp.ViewComponent)
+        self.View:Init(gameObject, id)
+        self:_OnAddComponent(self.View)
+        if self.onAddedComponent then
+            self.onAddedComponent(self.context, self, self.View)
+        end
+    end
+    
+    function GameEntity:UpdateView(gameObject, id)
+        if not self:HasComponent(GameComponentLookUp.ViewComponent) then
+            self:AddView(gameObject, id)
+            return
+        end
+        self.View:SetData(gameObject, id)
+        if self.onUpdatedComponent then
+            self.onUpdatedComponent(self.context, self, self.View)
+        end
+    end
+    
+    function GameEntity:RemoveView()
+        if not self:HasComponent(GameComponentLookUp.ViewComponent) then 
+            return 
+        end
+        self:_OnRemoveComponent(self.View)
+        self.View = nil
+        if self.onRemovedComponent then
+            self.onRemovedComponent(self.context, self, self.View)
+        end
+    end
+    
+    function GameEntity:HasView()
+        return self:HasComponent(GameComponentLookUp.ViewComponent)
     end
         
     return GameEntity

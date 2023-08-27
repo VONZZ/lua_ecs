@@ -1,20 +1,19 @@
 --============================================================================================
 -- ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
 
-local process = {
-    Game = {
-        AssetComponent = "ECS\\Game\\Component\\AssetComponent.lua",
-        ViewComponent = "ECS\\Game\\Component\\ViewComponent.lua",
-    },
-    Input = {
-        InputComponent = "ECS\\Input\\Component\\InputComponent.lua",
-    }
-
-}
-
 local contextType = {
     "Game",
-    "Input"
+    "Input",
+}
+
+local compMap = {
+    Game = {
+        "ECS\\Game\\Component\\AssetComponent.lua",
+        "ECS\\Game\\Component\\ViewComponent.lua",
+    },
+    Input = {
+        "ECS\\Input\\Component\\InputComponent.lua",
+    }
 }
 
 
@@ -31,12 +30,20 @@ local entity_extention = {}
         ...
     }
 ]]
+
+local function file_exists(path)
+    local file = io.open(path, "rb")
+    if file then file:close() end
+    return file ~= nil
+end
+
 ---------------------------------------------------------------------------------------
 -- 生成Component代码
 ---------------------------------------------------------------------------------------
 print("----------- 生成Component代码 -----------------------------------------------")
 
-for contextName, compList in pairs(process) do
+for _, contextName in pairs(contextType) do
+    local compList = compMap[contextName] or {}
     local generate_path = string.format('ECS\\Generated\\%s\\Components\\', contextName)
     for name, path in pairs(compList) do
         local code_comp = [[
@@ -53,7 +60,8 @@ end
 
 return [Name]
         ]]
-            
+        local name = string.match(path, "[^%\\]+%w$")
+        name = name:gsub('.lua', '')
         local comp = path:gsub('\\', '.')
         comp = comp:gsub('.lua', '')
         local script = require(comp)
@@ -227,16 +235,17 @@ for _, contextName in pairs(contextType) do
     ]]
     
     local clear_builder = ''
-    
-    for key, value in pairs(entity_extention[contextName]) do
-        local propery_name = key:gsub("Component", '')
-        local code = code_body
-        code = code:gsub('%[Param]', value)
-        code = code:gsub('%[PName]', propery_name)
-        code = code:gsub('%[Name]', key)
-        code_head = code_head .. code
-    
-        clear_builder = clear_builder .. string.format("    self.%s = nil\n", propery_name)
+    if entity_extention[contextName] then
+        for key, value in pairs(entity_extention[contextName]) do
+            local propery_name = key:gsub("Component", '')
+            local code = code_body
+            code = code:gsub('%[Param]', value)
+            code = code:gsub('%[PName]', propery_name)
+            code = code:gsub('%[Name]', key)
+            code_head = code_head .. code
+        
+            clear_builder = clear_builder .. string.format("    self.%s = nil\n", propery_name)
+        end
     end
     clear_builder = clear_builder:gsub("\n[^\n]*$", "")
     
@@ -249,6 +258,8 @@ for _, contextName in pairs(contextType) do
     code_head = code_head:gsub('%[T]', contextName)
     code_body = code_body:gsub('%[T]', contextName)
     entity_path = entity_path:gsub('%[T]', contextName)
+
+    os.execute("mkdir ECS\\Generated\\"..contextName)
 
     local entity_file = io.open(entity_path, "w+")
     assert(entity_file, "entity_file file is nil")
@@ -270,7 +281,8 @@ local code_context = [[
 ]]
 
 local str = ""
-for contextName, extention in pairs(entity_extention) do
+for _, contextName in pairs(contextType) do
+    local extention = entity_extention[contextName]
     local reqM = [[
 [T]ComponentScript = {
 [REQ]

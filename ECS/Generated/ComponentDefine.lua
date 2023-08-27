@@ -3,18 +3,18 @@
 -------------------------------------------------------------------------------------------------
 
 GameComponentScript = {
-    [1] = require('ECS.Generated.Game.Components.GameViewComponent'),
-    [2] = require('ECS.Generated.Game.Components.GameAssetComponent'),
+    [1] = require('ECS.Generated.Game.Components.GameAssetComponent'),
+    [2] = require('ECS.Generated.Game.Components.GameViewComponent'),
 }
 
 GameComponentLookUp = {
-    ViewComponent = 1,
-    AssetComponent = 2,
+    AssetComponent = 1,
+    ViewComponent = 2,
 }
 
 GameEMatcher = {
-    View = 1,
-    Asset = 2,
+    Asset = 1,
+    View = 2,
 }
 
 InputComponentScript = {
