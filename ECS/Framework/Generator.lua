@@ -25,7 +25,10 @@ local entity_extention = {}
 --[[
     entity_extention = {
         [contextName] = {
-            [TestComponent] = 'id, list, bol'
+            {
+                name = componentName
+                parma = 'id, list, bol'
+            }
         }
         ...
     }
@@ -71,7 +74,6 @@ return [Name]
         if not entity_extention[contextName] then
             entity_extention[contextName] = {}
         end
-        entity_extention[contextName][name] = {}
     
         ---------------- 处理属性字段 ----------------
         local content = ''
@@ -151,7 +153,10 @@ return [Name]
     
     
         -- 缓存到Entity扩展列表
-        entity_extention[contextName][name] = param
+        table.insert(entity_extention[contextName], {
+            name = name, 
+            param = param
+        })
         os.execute("mkdir ".. generate_path)
         file = io.open(generate_path.. contextName .. name .. '.lua', 'w+')
     
@@ -236,10 +241,11 @@ for _, contextName in pairs(contextType) do
     
     local clear_builder = ''
     if entity_extention[contextName] then
-        for key, value in pairs(entity_extention[contextName]) do
+        for _, list in pairs(entity_extention[contextName]) do
+            local key = list.name
             local propery_name = key:gsub("Component", '')
             local code = code_body
-            code = code:gsub('%[Param]', value)
+            code = code:gsub('%[Param]', list.param)
             code = code:gsub('%[PName]', propery_name)
             code = code:gsub('%[Name]', key)
             code_head = code_head .. code
@@ -305,7 +311,8 @@ for _, contextName in pairs(contextType) do
     local lok = ''
     local mac = ''
     local index = 1
-    for key, value in pairs(extention) do
+    for _, list in pairs(extention) do
+        local key = list.name
         req = req .. string.format("    [%d] = require('ECS.Generated.%s.Components.%s%s'),\n", index,contextName, contextName, key)
         lok = lok .. string.format("    %s = %d,\n", key, index)
         mac = mac .. string.format("    %s = %d,\n", key:gsub('Component', ''), index)
