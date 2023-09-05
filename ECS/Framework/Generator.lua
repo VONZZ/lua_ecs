@@ -181,7 +181,7 @@ for _, contextName in pairs(contextType) do
     end
     
     function [T]Entity:OnDispose()
-    [ClearCode]
+[ClearCode]
         self.onAddedComponent = nil
         self.onUpdatedComponent = nil
         self.onRemovedComponent = nil
@@ -244,11 +244,11 @@ for _, contextName in pairs(contextType) do
             code = code:gsub('%[Name]', key)
             code_head = code_head .. code
         
-            clear_builder = clear_builder .. string.format("    self.%s = nil\n", propery_name)
+            clear_builder = clear_builder .. string.format("        self.%s = nil\n", propery_name)
         end
     end
-    clear_builder = clear_builder:gsub("\n[^\n]*$", "")
     
+    clear_builder = clear_builder:gsub("\n[^\n]*$", "")
     code_head = code_head:gsub('%[ClearCode]', clear_builder)
     code_head = code_head .. [[
     

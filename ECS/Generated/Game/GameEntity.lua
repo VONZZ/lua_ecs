@@ -10,7 +10,7 @@
     
     function GameEntity:OnDispose()
         self.Asset = nil
-    self.View = nil
+        self.View = nil
         self.onAddedComponent = nil
         self.onUpdatedComponent = nil
         self.onRemovedComponent = nil
